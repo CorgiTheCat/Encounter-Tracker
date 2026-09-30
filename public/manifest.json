@@ -1,0 +1,15 @@
+{
+  "name": "Encounter Tracker",
+  "version": "0.2.1",
+  "manifest_version": 1,
+  "description": "Shared initiative and round tracker with custom portraits, Dead status, turn permissions and optional camera follow.",
+  "icon": "/logo.png",
+  "author": "CorgiTheCat",
+  "action": {
+    "title": "Encounter Tracker",
+    "icon": "/logo.png",
+    "popover": "/index.html",
+    "width": 760,
+    "height": 560
+  }
+}

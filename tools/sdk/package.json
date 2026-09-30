@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@owlbear-rodeo/sdk": "^3.1.0",
+    "esbuild": "^0.25.12"
+  }
+}

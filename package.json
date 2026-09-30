@@ -1,0 +1,16 @@
+{
+  "name": "encounter-tracker",
+  "version": "0.2.1",
+  "private": true,
+  "type": "module",
+  "author": "CorgiTheCat",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "npm run build && npm run check",
+    "dev": "npm run build && node scripts/serve.mjs",
+    "preview": "node scripts/serve.mjs"
+  }
+}
