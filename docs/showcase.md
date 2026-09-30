@@ -8,7 +8,7 @@ tags:
   - combat
   - tool
 manifest: https://encounter-tracker-gxvc.onrender.com/manifest.json
-learn-more: https://github.com/CorgiTheCat/Encounter-Tracker
+learn-more: https://encounter-tracker-gxvc.onrender.com/guide/
 ---
 
 # Encounter Tracker
@@ -27,6 +27,8 @@ Keep your party's turns in view with a fantasy-themed encounter tracker for Owlb
 - Toggle camera follow independently for each person. Combatants without a linked Scene Token do not move the camera.
 
 ## Getting started
+
+Read the [How to Use guide](https://encounter-tracker-gxvc.onrender.com/guide/) for installation, controls and troubleshooting.
 
 1. Install the extension using the manifest link above and enable it in your Owlbear Rodeo room.
 2. Open a Scene, select one or more Tokens, and choose **Add to Encounter** from the context menu. Alternatively, open the tracker and choose **Add from Assets**.

@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { readFile, realpath } from 'node:fs/promises';
+import { readFile, realpath, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve, relative, isAbsolute, extname } from 'node:path';
 const root = await realpath(fileURLToPath(new URL('../dist/', import.meta.url)));
@@ -9,7 +9,8 @@ createServer(async (req, res) => {
   try {
     if (!['GET','HEAD'].includes(req.method)) { res.writeHead(405); res.end(); return; }
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
-    const file = await realpath(resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname)));
+    let file = await realpath(resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname)));
+    if ((await stat(file)).isDirectory()) file = await realpath(resolve(file, 'index.html'));
     const pathWithin = relative(root, file);
     if (pathWithin.startsWith('..') || isAbsolute(pathWithin)) { res.writeHead(403); res.end(); return; }
     const body = await readFile(file);

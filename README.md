@@ -2,6 +2,8 @@
 
 An Owlbear Rodeo extension by **CorgiTheCat**. Manage initiative, rounds, character portraits and turn controls in a shared encounter with a fantasy-themed interface.
 
+Read the [How to Use guide](https://encounter-tracker-gxvc.onrender.com/guide/) for installation, controls and troubleshooting.
+
 ## Features
 
 - Add one or multiple Scene Tokens through **Add to Encounter**, or choose characters from Assets.
