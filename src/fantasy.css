@@ -21,6 +21,9 @@
 .life-toggle { width: 100%; margin-top: 10px; min-height: 34px; border: 1px solid #78625c; border-radius: 5px; color: #e5b8ac; background: #211e24; font-size: 12px; }
 .life-toggle:hover { background: #3a2930; }
 .life-toggle.is-dead { color: #bde5c9; border-color: #688c73; background: #192b25; }
+.unknown-toggle { color: #c4c9e9; border-color: #6d6c90; background: #202230; margin-top: 6px; }
+.unknown-toggle.is-unknown { color: #e3dafd; border-color: #a898d5; background: #302640; }
+.unknown-banner { color: #e3dafd; border-color: #a898d5; }
 :root { --gold: #e5c17d; --muted: #b3b9c3; --line: #645338; --panel: #17202c; color: #f3eee4; background: #10151e; }
 body { background: radial-gradient(ellipse at top right, #283340 0, transparent 65%), #10151e; }
 .shell { padding: 24px 22px 18px; border: 1px solid var(--line); box-shadow: inset 0 0 0 4px #141b25, inset 0 0 0 5px #3c352b; min-height: 100vh; }

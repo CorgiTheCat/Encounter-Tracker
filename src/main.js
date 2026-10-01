@@ -210,7 +210,7 @@ function compactMarkup() {
     <div class="compact-track">
       ${state.entries.map((entry, index) => {
         return `<button class="compact-card ${index === state.activeIndex ? "current" : ""} ${entry.type}" ${canAdvanceCombat() ? 'data-action="jump"' : 'aria-disabled="true"'} data-index="${index}" title="${escapeHtml(entry.name)}">
-          <span class="compact-portrait ${entry.dead ? 'is-dead' : ''}"><img src="${entry.image}" alt="${escapeHtml(entry.name)}" />${entry.dead ? '<span class="dead-banner">DEAD</span>' : ''}</span>
+          <span class="compact-portrait ${entry.dead || entry.unknown ? 'is-dead' : ''}"><img src="${entry.image}" alt="${escapeHtml(entry.name)}" />${entryStatusBanner(entry)}</span>
           <span class="compact-name">${escapeHtml(entry.name)}</span>
         </button>`;
       }).join("")}
@@ -223,6 +223,12 @@ function encounterStatusMarkup() {
 }
 
 function isPlayer(entry) { return entry.type === "player" || entry.type === "ผู้เล่น" || entry.type === "PLAYER"; }
+
+function entryStatusBanner(entry) {
+  if (entry.dead) return '<span class="dead-banner">DEAD</span>';
+  if (entry.unknown) return '<span class="dead-banner unknown-banner">UNKNOW</span>';
+  return '';
+}
 
 function richTextToPlainText(nodes) {
   if (!Array.isArray(nodes)) return "";
@@ -253,14 +259,14 @@ async function syncToActiveEntry() {
   const entry = state.entries[state.activeIndex];
   // Asset-only combatants have no Scene Token to follow. Skip them without
   // changing the current viewport; the next Token-backed turn can still sync.
-  if (entry?.dead || !entry?.sourceItemId || !OBR.scene?.items?.getItemBounds) return;
+  if (entry?.dead || entry?.unknown || !entry?.sourceItemId || !OBR.scene?.items?.getItemBounds) return;
   try {
     const items = await OBR.scene.items.getItems([entry.sourceItemId]);
     if (!items.length || request !== cameraRequest) return;
     const bounds = await OBR.scene.items.getItemBounds([entry.sourceItemId]);
     const currentEntry = state.entries[state.activeIndex];
     if (bounds && request === cameraRequest && state.followView &&
-        currentEntry?.id === entry.id && !currentEntry.dead) {
+        currentEntry?.id === entry.id && !currentEntry.dead && !currentEntry.unknown) {
       // Leave room around the Token so the player can still see nearby terrain.
       const contextScale = 12;
       const width = Math.max(bounds.width * contextScale, 1);
@@ -294,9 +300,9 @@ function card(entry, index) {
     <div class="card-tools">
       <button class="tiny" data-action="remove" data-id="${entry.id}" title="Remove">×</button>
     </div>
-    <label class="portrait ${entry.dead ? 'is-dead' : ''}" data-action="pick-entry-asset" data-id="${entry.id}">
+    <label class="portrait ${entry.dead || entry.unknown ? 'is-dead' : ''}" data-action="pick-entry-asset" data-id="${entry.id}">
       <img src="${entry.image}" alt="${escapeHtml(entry.name)}" />
-      ${entry.dead ? '<span class="dead-banner">DEAD</span>' : ''}
+      ${entryStatusBanner(entry)}
         <span class="image-hint">Change from Asset</span>
     </label>
     <input class="name" data-field="name" data-id="${entry.id}" value="${escapeHtml(entry.name)}" aria-label="Name" />
@@ -309,6 +315,7 @@ function card(entry, index) {
       </select>
     </div>
     <button class="life-toggle ${entry.dead ? 'is-dead' : ''}" data-action="toggle-dead" data-id="${entry.id}" aria-pressed="${Boolean(entry.dead)}" aria-label="${entry.dead ? 'Revive' : 'Mark dead'}: ${escapeHtml(entry.name)}">${entry.dead ? '↶ Revive' : 'Mark dead'}</button>
+    <button class="life-toggle unknown-toggle ${entry.unknown ? 'is-unknown' : ''}" data-action="toggle-unknown" data-id="${entry.id}" aria-pressed="${Boolean(entry.unknown)}" aria-label="${entry.unknown ? 'Reveal' : 'Mark Unknow'}: ${escapeHtml(entry.name)}">${entry.unknown ? '↶ Reveal' : 'Mark Unknow'}</button>
   </article>`;
 }
 
@@ -330,10 +337,14 @@ function bindEvents() {
   }));
   app.querySelectorAll("[data-action]").forEach((el) => el.addEventListener("click", async (event) => {
     const action = event.currentTarget.dataset.action;
-    if (action === "toggle-dead") {
+    if (action === "toggle-dead" || action === "toggle-unknown") {
       const entry = state.entries.find((item) => item.id === event.currentTarget.dataset.id);
       if (!entry) return;
-      entry.dead = !entry.dead;
+      const field = action === 'toggle-dead' ? 'dead' : 'unknown';
+      entry[field] = !entry[field];
+      // A combatant has one manual status: Dead or Unknow, not both.
+      if (entry[field]) entry[field === 'dead' ? 'unknown' : 'dead'] = false;
+      if (state.entries[state.activeIndex]?.id === entry.id) cameraRequest++;
       await persist();
       render();
       return;
