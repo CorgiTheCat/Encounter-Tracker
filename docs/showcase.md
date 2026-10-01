@@ -19,6 +19,7 @@ Keep your party's turns in view with a fantasy-themed encounter tracker for Owlb
 
 - Add selected Scene Tokens together using **Add to Encounter**, or add characters from Assets.
 - Use full-art portraits in the tracker without replacing Token images on the Scene.
+- Edit the Name field while an encounter is running. Press Enter or click outside to save. Manual tracker names remain until the linked Token's Scene name actually changes.
 - Share the roster, current turn and round with your party while each person chooses their own Edit or Encounter view.
 - Adjust the encounter bar to S, M or L, with the active combatant highlighted.
 - Display elapsed encounter time using six seconds per round.

@@ -309,7 +309,7 @@ function card(entry, index) {
       ${entryStatusBanner(entry)}
         <span class="image-hint">Change from Asset</span>
     </label>
-    <input class="name" data-field="name" data-id="${entry.id}" value="${escapeHtml(entry.name)}" aria-label="Name" />
+    <label class="name-label">Name<input class="name" data-field="name" data-id="${entry.id}" value="${escapeHtml(entry.name)}" aria-label="Name" title="Edit name · Enter or click outside to save" /></label>
     <div class="meta-labels" aria-hidden="true"><span>Initiative</span><span>Side</span></div>
     <div class="meta">
       <input class="initiative" type="number" min="0" data-field="initiative" data-id="${entry.id}" value="${entry.initiative}" aria-label="Initiative" />
@@ -331,9 +331,29 @@ function bindEvents() {
     state.compactSize = event.target.value;
     render();
   }));
-  app.querySelectorAll("[data-field]").forEach((el) => el.addEventListener("change", (event) => {
+  app.querySelectorAll('[data-field="name"]').forEach(el => el.addEventListener('keydown', event => {
+    if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur(); }
+  }));
+  app.querySelectorAll("[data-field]").forEach((el) => el.addEventListener("change", async (event) => {
     const item = state.entries.find((x) => x.id === event.target.dataset.id);
     if (!item) return;
+    if (event.target.dataset.field === 'name') {
+      const name = event.target.value.trim();
+      if (!name) { event.target.value = item.name; return; }
+      item.name = name;
+      item.nameOverride = true;
+      event.target.value = name;
+      // Old saved entries may lack a source-name snapshot. Read it once without
+      // changing the Scene Token, so unrelated Scene edits cannot reset a rename.
+      if (item.sourceItemId && item.sourceName === undefined && OBR?.scene?.items?.getItems) {
+        try {
+          const [source] = await OBR.scene.items.getItems([item.sourceItemId]);
+          if (source && item.name === name) item.sourceName = sceneItemName(source);
+        } catch (error) { console.warn('Could not read source Token name', error); }
+      }
+      await persist();
+      return;
+    }
     const numericFields = new Set(["initiative", "hp", "maxHp", "ac"]);
     item[event.target.dataset.field] = numericFields.has(event.target.dataset.field) ? Number(event.target.value) : event.target.value;
     persist();
@@ -611,6 +631,7 @@ async function addSceneItemToEncounter(item) {
     sourceItemId: item.id,
     id: item.id,
     name: sceneItemName(item),
+    sourceName: sceneItemName(item),
     initiative: 0,
     type: "enemy",
     image: item.image.url,
@@ -633,6 +654,7 @@ async function addSceneItemsToEncounter(items) {
       sourceItemId: item.id,
       id: item.id,
       name: sceneItemName(item),
+      sourceName: sceneItemName(item),
       initiative: 0,
       type: "enemy",
       image: item.image.url,
@@ -673,10 +695,13 @@ async function syncEntryImages(items) {
     }
     if (source) {
       const nextName = sceneItemName(source);
-      if (nextName !== entry.name) {
+      const sourceRenamed = entry.sourceName !== undefined && entry.sourceName !== nextName;
+      if ((!entry.nameOverride || sourceRenamed) && nextName !== entry.name) {
         entry.name = nextName;
         changed = true;
       }
+      if (sourceRenamed) entry.nameOverride = false;
+      if (entry.sourceName !== nextName) { entry.sourceName = nextName; changed = true; }
     }
   }
   if (changed) { render(); await persist(); }
