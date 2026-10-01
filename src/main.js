@@ -259,14 +259,14 @@ async function syncToActiveEntry() {
   const entry = state.entries[state.activeIndex];
   // Asset-only combatants have no Scene Token to follow. Skip them without
   // changing the current viewport; the next Token-backed turn can still sync.
-  if (entry?.dead || entry?.unknown || !entry?.sourceItemId || !OBR.scene?.items?.getItemBounds) return;
+  if (!canFollowEntry(entry) || !entry?.sourceItemId || !OBR.scene?.items?.getItemBounds) return;
   try {
     const items = await OBR.scene.items.getItems([entry.sourceItemId]);
     if (!items.length || request !== cameraRequest) return;
     const bounds = await OBR.scene.items.getItemBounds([entry.sourceItemId]);
     const currentEntry = state.entries[state.activeIndex];
     if (bounds && request === cameraRequest && state.followView &&
-        currentEntry?.id === entry.id && !currentEntry.dead && !currentEntry.unknown) {
+        currentEntry?.id === entry.id && canFollowEntry(currentEntry)) {
       // Leave room around the Token so the player can still see nearby terrain.
       const contextScale = 12;
       const width = Math.max(bounds.width * contextScale, 1);
@@ -285,6 +285,10 @@ async function syncToActiveEntry() {
   } catch (error) {
     console.warn("Could not sync viewport to active combatant", error);
   }
+}
+
+function canFollowEntry(entry) {
+  return Boolean(entry) && !entry.dead && (!entry.unknown || localRole === 'GM');
 }
 
 function scrollActiveCard() {

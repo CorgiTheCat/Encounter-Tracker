@@ -25,7 +25,7 @@ Keep your party's turns in view with a fantasy-themed encounter tracker for Owlb
 - Mark combatants Dead or Revive them; Dead portraits become grayscale with a DEAD label.
 - Mark hidden or missing combatants Unknow, with grayscale portraits and an UNKNOW label. Reveal restores the normal portrait. Dead and Unknow are mutually exclusive; neither removes a combatant from the turn order.
 - Let the GM control whether players can advance turns or use Stop Encounter using the **Player turns** switch. Players can still open their encounter view when the switch is off.
-- Toggle camera follow independently for each person. Dead, Unknow and unlinked combatants do not move the camera.
+- Toggle camera follow independently for each person. Only the GM can follow Unknow combatants; players skip them even when Player turns is enabled. Dead and unlinked combatants do not move anyone's camera.
 
 ## Getting started
 
