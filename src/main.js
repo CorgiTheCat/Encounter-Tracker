@@ -77,6 +77,7 @@ let renderedMode = null;
 let renderedTurn = null;
 let lastActionHeight = null;
 let cameraRequest = 0;
+let nameSaveTimer;
 let compactResizeFrame = 0;
 
 function scheduleCompactResize() {
@@ -334,10 +335,22 @@ function bindEvents() {
   app.querySelectorAll('[data-field="name"]').forEach(el => el.addEventListener('keydown', event => {
     if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur(); }
   }));
+  app.querySelectorAll('[data-field="name"]').forEach(el => el.addEventListener('input', event => {
+    const entry = state.entries.find(item => item.id === event.currentTarget.dataset.id);
+    const name = event.currentTarget.value.trim();
+    if (!entry || !name) return;
+    // Update before any render can remove this input. change/blur alone is not
+    // reliable when switching modes or receiving a shared-state refresh.
+    entry.name = name;
+    entry.nameOverride = true;
+    clearTimeout(nameSaveTimer);
+    nameSaveTimer = setTimeout(() => { nameSaveTimer = null; persist(); }, 250);
+  }));
   app.querySelectorAll("[data-field]").forEach((el) => el.addEventListener("change", async (event) => {
     const item = state.entries.find((x) => x.id === event.target.dataset.id);
     if (!item) return;
     if (event.target.dataset.field === 'name') {
+      clearTimeout(nameSaveTimer); nameSaveTimer = null;
       const name = event.target.value.trim();
       if (!name) { event.target.value = item.name; return; }
       item.name = name;
@@ -361,6 +374,10 @@ function bindEvents() {
   }));
   app.querySelectorAll("[data-action]").forEach((el) => el.addEventListener("click", async (event) => {
     const action = event.currentTarget.dataset.action;
+    if (nameSaveTimer) {
+      clearTimeout(nameSaveTimer); nameSaveTimer = null;
+      await persist();
+    }
     if (action === "toggle-dead" || action === "toggle-unknown") {
       const entry = state.entries.find((item) => item.id === event.currentTarget.dataset.id);
       if (!entry) return;
