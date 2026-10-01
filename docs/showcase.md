@@ -24,7 +24,7 @@ Keep your party's turns in view with a fantasy-themed encounter tracker for Owlb
 - Display elapsed encounter time using six seconds per round.
 - Mark combatants Dead or Revive them; Dead portraits become grayscale with a DEAD label.
 - Let the GM control whether players can advance turns using the **Player turns** switch.
-- Toggle camera follow independently for each person. Combatants without a linked Scene Token do not move the camera.
+- Toggle camera follow independently for each person. Dead combatants and combatants without a linked Scene Token do not move the camera.
 
 ## Getting started
 

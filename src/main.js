@@ -77,6 +77,23 @@ let renderedMode = null;
 let renderedTurn = null;
 let lastActionHeight = null;
 let cameraRequest = 0;
+let compactResizeFrame = 0;
+
+function scheduleCompactResize() {
+  cancelAnimationFrame(compactResizeFrame);
+  compactResizeFrame = requestAnimationFrame(() => {
+    const shell = app.querySelector('.compact-shell');
+    if (connectionStatus !== 'ready' || !state.running || !state.compact || !shell) return;
+    // Measure intrinsic content, never the iframe/body height. This stays stable
+    // when Owlbear changes the viewport and also handles wrapped mobile headers.
+    resizeAction(Math.ceil(shell.getBoundingClientRect().height));
+  });
+}
+
+if (typeof ResizeObserver !== 'undefined') {
+  const compactResizeObserver = new ResizeObserver(scheduleCompactResize);
+  compactResizeObserver.observe(app);
+}
 
 function turnIdentity() { return `${state.round}:${state.entries[state.activeIndex]?.id ?? ""}`; }
 
@@ -95,6 +112,7 @@ function finishRender(mode, focus) {
   if (mode === "compact" && (renderedMode !== mode || renderedTurn !== turnIdentity())) requestAnimationFrame(scrollActiveCard);
   renderedMode = mode;
   renderedTurn = turnIdentity();
+  if (mode === 'compact') scheduleCompactResize();
 }
 
 function render() {
@@ -108,7 +126,7 @@ function render() {
   if (oldTrack && renderedMode) scrollPositions[renderedMode] = oldTrack.scrollLeft;
   const focused = document.activeElement;
   const focus = focused?.dataset?.field ? { id: focused.dataset.id, field: focused.dataset.field, value: focused.value, start: focused.selectionStart, end: focused.selectionEnd } : null;
-  resizeAction(state.running && state.compact ? (state.compactSize === "large" ? 285 : state.compactSize === "medium" ? 245 : 215) : 560);
+  if (!(state.running && state.compact)) resizeAction(560);
   if (state.running && state.compact) {
     app.innerHTML = compactMarkup();
     finishRender("compact", null);
@@ -167,7 +185,7 @@ async function resizeAction(height) {
     // the iframe viewport after resizing, which would otherwise shrink it again
     // every time render() runs.
     if (OBR.action.setWidth) await OBR.action.setWidth(760);
-    await OBR.action.setHeight(Math.max(180, height));
+    await OBR.action.setHeight(Math.max(120, height));
   } catch (error) { lastActionHeight = null; console.warn("Could not resize encounter action", error); }
 }
 
@@ -235,12 +253,14 @@ async function syncToActiveEntry() {
   const entry = state.entries[state.activeIndex];
   // Asset-only combatants have no Scene Token to follow. Skip them without
   // changing the current viewport; the next Token-backed turn can still sync.
-  if (!entry?.sourceItemId || !OBR.scene?.items?.getItemBounds) return;
+  if (entry?.dead || !entry?.sourceItemId || !OBR.scene?.items?.getItemBounds) return;
   try {
     const items = await OBR.scene.items.getItems([entry.sourceItemId]);
     if (!items.length || request !== cameraRequest) return;
     const bounds = await OBR.scene.items.getItemBounds([entry.sourceItemId]);
-    if (bounds && request === cameraRequest && state.followView) {
+    const currentEntry = state.entries[state.activeIndex];
+    if (bounds && request === cameraRequest && state.followView &&
+        currentEntry?.id === entry.id && !currentEntry.dead) {
       // Leave room around the Token so the player can still see nearby terrain.
       const contextScale = 12;
       const width = Math.max(bounds.width * contextScale, 1);
