@@ -24,7 +24,7 @@ Keep your party's turns in view with a fantasy-themed encounter tracker for Owlb
 - Display elapsed encounter time using six seconds per round.
 - Mark combatants Dead or Revive them; Dead portraits become grayscale with a DEAD label.
 - Mark hidden or missing combatants Unknow, with grayscale portraits and an UNKNOW label. Reveal restores the normal portrait. Dead and Unknow are mutually exclusive; neither removes a combatant from the turn order.
-- Let the GM control whether players can advance turns using the **Player turns** switch.
+- Let the GM control whether players can advance turns or use Stop Encounter using the **Player turns** switch. Players can still open their encounter view when the switch is off.
 - Toggle camera follow independently for each person. Dead, Unknow and unlinked combatants do not move the camera.
 
 ## Getting started

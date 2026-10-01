@@ -151,7 +151,7 @@ function render() {
           ${controlsReady && localRole === "GM" ? '<button class="ghost" data-action="sort">Sort Initiative</button>' : ""}
           ${state.running && !state.compact ? '<button class="ghost" data-action="compact">Back to Encounter Bar</button>' : ""}
           ${state.running && canAdvanceCombat() ? '<button class="next" data-action="next" title="Next combatant">Next  ›</button>' : ""}
-          <button class="primary" data-action="run">${state.running ? "Stop Encounter" : "Start Encounter"}</button>
+          ${!state.running || canAdvanceCombat() ? `<button class="primary" data-action="run">${state.running ? "Stop Encounter" : "Start Encounter"}</button>` : ''}
         </div>
       </header>
       <div class="status-row">
@@ -353,6 +353,7 @@ function bindEvents() {
     if (["sort", "clear-open"].includes(action) && (!controlsReady || localRole !== "GM")) return;
     if (action === "clear-open") { openClearDialog(); return; }
     if (action === "run") {
+      if (state.running && !canAdvanceCombat()) return;
       state.running = !state.running;
       state.compact = state.running;
       render();
